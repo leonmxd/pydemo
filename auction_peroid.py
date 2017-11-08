@@ -8,69 +8,91 @@
 
 import matplotlib.pyplot as plt
 import random
+import sys
 
 
-'''
+class LogProcessor:
+    """Parse the log"""
 
-plt.plot(c, label='first')
-plt.plot([1, 2, 3, 9], [5, 7, 4, 1], label='second')
-plt.xlabel('x')
-plt.ylabel('yyy')
-plt.title('till')
-plt.legend()
-plt.show()
-'''
+    # x = 0
+    # log_file = ""
+
+    def __init__(self, filename):
+        self.x = 0
+        self.td = []
+        self.od = []
+        self.orders = {}
+        self.log_file = filename
+
+    def parse_td(self, line):
+        fields = line.split(',')
+        instrument = fields[0].split(':')[-1]
+        time = fields[2]
+        price = float(fields[3])
+        volume = int(fields[4])
+        buy_index = int(fields[7])
+        sell_index = int(fields[8])
+        function_code = fields[10]  # '70' trade, '52' cancel
+        if function_code == '70':
+            self.td.append((self.x, price, volume))
+            self.x += 1
+        elif function_code == '52':
+            if buy_index == 0:
+                index = sell_index
+            else:
+                index = buy_index
+            self.orders[-1] = volume
+
+    def parse_od(self, line):
+        fields = line.split(',')
+        instrument = fields[0].split(':')[-1]
+        time = fields[2]
+        price = float(fields[3])
+        volume = int(fields[4])
+        order_index = int(fields[6])
+        order_kind = fields[7]   # ’1‘（49）表示市价单，’2‘（50）表示限价单，’U‘（85）表示本方最优
+        function_code = fields[8]  # ’1‘（49）表示BUY，’2‘（50）表示SELL
+        order = [self.x, price, volume, order_kind, function_code, 0]
+        self.x += 1
+        self.od.append(order)
+        self.orders[order_index] = order
+
+    # 解析log文件
+    def parse_log(self):
+        f = open(self.log_file)
+        for line in f:
+            if line.find('OD:') > 0:
+                self.parse_od(line)
+            elif line.find('TD:') > 0:
+                self.parse_td(line)
+        print('Orders:', len(self.od), 'Trades:', len(self.td))
+
+    def plot(self):
+        # plot orders
+        for order in self.od:
+            x = order[0]
+            if order[4] == '49':
+                y = order[2]
+                c = 'r'
+            else:
+                y = -order[2]
+                c = 'g'
+            plt.vlines(x, 0, y, colors=c)
+
+        # plot trades
+
+        print('start to show')
+        # show
+        plt.show()
 
 
-upper_limit = 30
+if len(sys.argv) < 2:
+    print('Usage:', sys.argv[0], '<logfile>')
+    sys.exit(-1)
 
+print('Parsing file', sys.argv[1])
+processor = LogProcessor(sys.argv[1])
+processor.parse_log()
+processor.plot()
 
-def get_random(count):
-    i = 0
-    l = []
-    while i < count:
-        n = random.uniform(1, upper_limit)
-        l.append(n)
-        i += 1
-
-    return l
-
-
-def get_random_relative(count, step=upper_limit / 30.0):
-    i = 0
-    l = []
-    start = upper_limit / 2.0
-    while i < count:
-        n = random.uniform(start - step / 2.0, start + step / 2.0)
-        l.append(n)
-        start = n
-        i += 1
-
-    return l
-
-
-def plot1():
-    arr = get_random(500)
-    plt.grid = True
-    index = 0
-    for x in arr:
-        span = 0 # upper_limit
-        if x > upper_limit / 2:
-            c = 'r'
-            y = span + x
-        else:
-            c = 'g'
-            y = span - x
-        # plt.plot([index, index], [span, y], color=c)
-        plt.vlines(index, span, y, colors=c)
-        index += 1
-
-
-def plot2():
-    arr = get_random_relative(500)
-    plt.plot(arr)
-
-plot1()
-plot2()
-plt.show()
 
