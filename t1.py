@@ -46,7 +46,7 @@ def get_random_relative(count, step=upper_limit / 30.0):
     return l
 
 # 我的注解
-def plot1():
+def plot1(ax):
     arr = get_random(500)
     plt.grid = True
     index = 0
@@ -61,15 +61,19 @@ def plot1():
             c = 'g'
             y = span - x
             linestyle = "-"
-        plt.plot([index, index], [span, y], color=c, ls=linestyle)
+        ax.plot([index, index], [span, y], color=c, ls=linestyle)
         index += 1
 
 
-def plot2():
-    arr = get_random_relative(500)
-    plt.plot(arr)
+def plot2(ax):
+    arr = get_random_relative(450)
+    ax.plot(arr)
 
-plot1()
-plot2()
+ax1 = plt.subplot2grid((3, 1), (0, 0), rowspan=2, colspan=1)
+ax2 = plt.subplot2grid((3, 1), (2, 0), rowspan=1, colspan=1, sharex=ax1)
+
+plot1(ax1)
+plot2(ax2)
+plt.tight_layout()
 plt.show()
 
