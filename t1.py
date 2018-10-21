@@ -45,6 +45,7 @@ def get_random_relative(count, step=upper_limit / 30.0):
 
     return l
 
+
 # 我的注解
 def plot1(ax):
     arr = get_random(500)
