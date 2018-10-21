@@ -7,7 +7,6 @@
 # 5 对应的时间戳，一秒有多个成交和挂单，怎么处理？
 
 import matplotlib.pyplot as plt
-import random
 import sys
 
 
@@ -86,13 +85,13 @@ class LogProcessor:
         plt.show()
 
 
-if len(sys.argv) < 2:
-    print('Usage:', sys.argv[0], '<logfile>')
-    sys.exit(-1)
+log_file = '000420.txt'
+if len(sys.argv) >= 2:
+    #print('Usage:', sys.argv[0], '<logfile>')
+    #sys.exit(-1)
+    log_file = sys.argv[1]
 
-print('Parsing file', sys.argv[1])
-processor = LogProcessor(sys.argv[1])
+print('Parsing file', log_file)
+processor = LogProcessor(log_file)
 processor.parse_log()
 processor.plot()
-
-
