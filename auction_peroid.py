@@ -40,7 +40,7 @@ class LogProcessor:
                 index = sell_index
             else:
                 index = buy_index
-            self.orders[-1] = volume
+            self.orders[index][-1] = volume
 
     def parse_od(self, line):
         fields = line.split(',')
@@ -67,20 +67,34 @@ class LogProcessor:
         print('Orders:', len(self.od), 'Trades:', len(self.td))
 
     def plot(self):
+        ax1 = plt.subplot2grid((3, 1), (0, 0), rowspan=2, colspan=1)
+        ax2 = plt.subplot2grid((3, 1), (2, 0), rowspan=1, colspan=1, sharex=ax1)
+        volume_buy = 0
+        volume_sell = 0
+        volume_trade = 0
         # plot orders
         for order in self.od:
             x = order[0]
             if order[4] == '49':
                 y = order[2]
                 c = 'r'
+                volume_buy += (order[2] - order[5])
             else:
                 y = -order[2]
                 c = 'g'
-            plt.vlines(x, 0, y, colors=c)
+                volume_sell += (order[2] - order[5])
+            ax1.vlines(x, 0, y, colors=c)
 
         # plot trades
+        axis_x = []
+        axis_y = []
+        for trade in self.td:
+            axis_x.append(trade[0])
+            axis_y.append(trade[1])
+            volume_trade += trade[2]
+        ax2.plot(axis_x, axis_y)
 
-        print('start to show')
+        print('volume_buy', volume_buy, 'volume_sell', volume_sell, 'volume_trade', volume_trade)
         # show
         plt.show()
 
